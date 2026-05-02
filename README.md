@@ -23,9 +23,9 @@ A [Bitfocus Companion](https://bitfocus.io/companion) module for [ShowCall](http
 
 ### Manual install (developer / sideload)
 
-1. Download the latest release ZIP from [Releases](https://github.com/dharmon96/companion-module-darianharmon-showcall/releases).
-2. In Companion, open **Modules** → **Manage modules**.
-3. Click **Import module** (or follow Companion's [developer module loading docs](https://github.com/bitfocus/companion-module-base/wiki/Module-Development)) and select the ZIP.
+1. Download the latest `.tgz` from [Releases](https://github.com/dharmon96/Showcall-Companion-Module/releases).
+2. In Companion, open **Settings → Modules** and enable **Developer mode**.
+3. Click **Import module** and select the `.tgz`.
 
 ## Connect
 
