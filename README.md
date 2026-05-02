@@ -1,4 +1,4 @@
-# companion-module-darianharmon-showcall
+# companion-module-mantaglow-showcall
 
 A [Bitfocus Companion](https://bitfocus.io/companion) module for [ShowCall](https://show.darianharmon.com) — drive your live run-of-show from a Stream Deck.
 
@@ -31,8 +31,8 @@ A [Bitfocus Companion](https://bitfocus.io/companion) module for [ShowCall](http
 
 1. In ShowCall, open **Tools → Companion / Stream Deck**.
 2. Click **Create** to mint a new Companion link (this is a `showcaller`-level share token scoped to the show).
-3. Copy the **Connection String**.
-4. In Companion, add a new **darianharmon: ShowCall** connection. Paste the string into the **Connection String** field — the module auto-splits it into the server URL and token.
+3. Copy the **Connection URL**.
+4. In Companion, add a new **Mantaglow: ShowCall** connection and paste the URL into the single **Connection URL** field — that's the only thing it asks for.
 
 You can revoke a Companion link from the same dialog at any time without affecting other share links.
 
@@ -52,7 +52,7 @@ You can revoke a Companion link from the same dialog at any time without affecti
 
 ## Variables
 
-Available as `$(darianharmon-showcall:<id>)` in any button text.
+Available as `$(mantaglow-showcall:<id>)` in any button text.
 
 **Show:**
 - `show_name`, `show_status`, `is_live`, `cues_total`, `cues_completed`, `show_elapsed`

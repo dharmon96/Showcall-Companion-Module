@@ -6,10 +6,10 @@ This module connects [Bitfocus Companion](https://bitfocus.io/companion) to a [S
 
 1. Open ShowCall and load your show.
 2. **Tools → Companion / Stream Deck → Create** with an optional label (e.g. *FOH Stream Deck*).
-3. Click **Copy** on the **Connection String**.
-4. In Companion, add the *darianharmon: ShowCall* connection and paste into the **Connection String** field.
+3. Click **Copy** on the **Connection URL**.
+4. In Companion, add the *Mantaglow: ShowCall* connection and paste into the **Connection URL** field.
 
-The module splits the pasted string into the **Server URL** and **Token** automatically. If you'd rather fill them manually, both fields are editable.
+The module needs only that single URL — it parses out the server origin and the token internally.
 
 ## Status Indicators
 

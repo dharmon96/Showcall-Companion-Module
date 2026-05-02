@@ -45,60 +45,60 @@ class ShowCallInstance extends InstanceBase {
 				label: 'How to connect',
 				width: 12,
 				value:
-					'In ShowCall, open <b>Tools → Companion / Stream Deck</b>, create a Companion link, and copy the <b>Connection String</b>. ' +
-					'Paste it below — the module will split it into the server URL and token automatically. ' +
-					'Or fill the two fields by hand.',
+					'In ShowCall, open <b>Tools → Companion / Stream Deck</b>, create a Companion link, and copy the <b>Connection URL</b>. ' +
+					'Paste it below — that\'s the only field you need.',
 			},
 			{
 				type: 'textinput',
-				id: 'connectionString',
-				label: 'Connection String (paste from ShowCall)',
+				id: 'connectionUrl',
+				label: 'Connection URL (paste from ShowCall)',
 				width: 12,
 				default: '',
-				tooltip: 'Format: https://your-server|your-token',
-			},
-			{
-				type: 'textinput',
-				id: 'serverUrl',
-				label: 'Server URL',
-				width: 8,
-				default: 'https://show.darianharmon.com',
-				regex: '/^https?:\\/\\/.+/',
-			},
-			{
-				type: 'textinput',
-				id: 'token',
-				label: 'Companion Token',
-				width: 4,
-				default: '',
+				tooltip: 'Format: https://your-server.example.com?token=<companion-token>',
 			},
 		]
 	}
 
 	/**
-	 * If the user pasted a connection string, split it into URL + token before
-	 * we try to connect. This keeps the manual fields and the paste field in
-	 * sync — on every config update, paste takes precedence if it's filled.
+	 * Parse the single Connection URL into a server origin + token. Accepts:
+	 *  1. A standard URL with `?token=<x>` query param  (preferred)
+	 *  2. A legacy "<url>|<token>" pipe-delimited string (for tokens minted
+	 *     by older ShowCall builds)
+	 *  3. A plain UUID, in which case we fall back to the default server URL
+	 *
+	 * Returns { serverUrl, token } or { serverUrl: '', token: '' } if unparseable.
 	 */
-	_normalizeConfig(config) {
-		const next = { ...config }
-		const paste = (config.connectionString || '').trim()
-		if (paste) {
-			const idx = paste.indexOf('|')
-			if (idx > 0) {
-				next.serverUrl = paste.slice(0, idx).trim()
-				next.token = paste.slice(idx + 1).trim()
-				// Clear the paste field so future config opens show the parsed
-				// fields, not stale paste text.
-				next.connectionString = ''
-				this.saveConfig(next)
-			}
+	_parseConnection(input) {
+		const raw = (input || '').trim()
+		if (!raw) return { serverUrl: '', token: '' }
+
+		// Legacy pipe format
+		if (raw.includes('|') && !raw.startsWith('http')) {
+			const idx = raw.indexOf('|')
+			return { serverUrl: raw.slice(0, idx).trim(), token: raw.slice(idx + 1).trim() }
 		}
-		return next
+		if (raw.includes('|') && raw.startsWith('http')) {
+			const idx = raw.indexOf('|')
+			return { serverUrl: raw.slice(0, idx).trim(), token: raw.slice(idx + 1).trim() }
+		}
+
+		// URL with ?token= query
+		try {
+			const u = new URL(raw)
+			const token = u.searchParams.get('token') || ''
+			if (token) return { serverUrl: u.origin, token }
+			// URL without a token query — treat the URL as just the server,
+			// no token. Caller will see empty token and refuse to connect.
+			return { serverUrl: u.origin, token: '' }
+		} catch {
+			// Not a URL — assume it's a bare token. Default server URL is
+			// the canonical hosted ShowCall instance.
+			return { serverUrl: 'https://show.mantaglow.com', token: raw }
+		}
 	}
 
 	async init(config) {
-		this.config = this._normalizeConfig(config || {})
+		this.config = config || {}
 		this.updateActions()
 		this.updateFeedbacks()
 		this.updateVariableDefinitions()
@@ -107,7 +107,7 @@ class ShowCallInstance extends InstanceBase {
 	}
 
 	async configUpdated(config) {
-		this.config = this._normalizeConfig(config || {})
+		this.config = config || {}
 		await this._reconnect()
 	}
 
@@ -130,9 +130,9 @@ class ShowCallInstance extends InstanceBase {
 	// ── connection lifecycle ────────────────────────────────────────────
 
 	async _connect() {
-		const { serverUrl, token } = this.config
+		const { serverUrl, token } = this._parseConnection(this.config.connectionUrl)
 		if (!serverUrl || !token) {
-			this.updateStatus(InstanceStatus.BadConfig, 'Server URL + token required')
+			this.updateStatus(InstanceStatus.BadConfig, 'Paste a Connection URL from ShowCall → Tools → Companion')
 			return
 		}
 

@@ -75,7 +75,7 @@ export function definePresets() {
 		name: 'GO',
 		type: 'button',
 		style: {
-			text: 'GO\\n$(darianharmon-showcall:cue_number)\\n$(darianharmon-showcall:cue_remaining)',
+			text: 'GO\\n$(mantaglow-showcall:cue_number)\\n$(mantaglow-showcall:cue_remaining)',
 			size: '14',
 			color: COL.white,
 			bgcolor: COL.green,
@@ -147,7 +147,7 @@ export function definePresets() {
 		name: 'Smart GO (auto Go Live)',
 		type: 'button',
 		style: {
-			text: '$(darianharmon-showcall:is_live)1?GO\\n$(darianharmon-showcall:cue_number)\\n$(darianharmon-showcall:cue_remaining):GO LIVE',
+			text: '$(mantaglow-showcall:is_live)1?GO\\n$(mantaglow-showcall:cue_number)\\n$(mantaglow-showcall:cue_remaining):GO LIVE',
 			size: '14',
 			color: COL.white,
 			bgcolor: COL.green,
@@ -162,7 +162,7 @@ export function definePresets() {
 		name: 'Current Cue',
 		type: 'button',
 		style: {
-			text: '$(darianharmon-showcall:cue_number)\\n$(darianharmon-showcall:cue_title)',
+			text: '$(mantaglow-showcall:cue_number)\\n$(mantaglow-showcall:cue_title)',
 			size: '14',
 			color: COL.white,
 			bgcolor: COL.gray800,
@@ -176,7 +176,7 @@ export function definePresets() {
 		name: 'Cue Time / Planned',
 		type: 'button',
 		style: {
-			text: '$(darianharmon-showcall:cue_elapsed)\\n/\\n$(darianharmon-showcall:cue_duration)',
+			text: '$(mantaglow-showcall:cue_elapsed)\\n/\\n$(mantaglow-showcall:cue_duration)',
 			size: '14',
 			color: COL.white,
 			bgcolor: COL.gray900,
@@ -190,7 +190,7 @@ export function definePresets() {
 		name: 'Cue Remaining',
 		type: 'button',
 		style: {
-			text: 'REMAINING\\n$(darianharmon-showcall:cue_remaining)',
+			text: 'REMAINING\\n$(mantaglow-showcall:cue_remaining)',
 			size: '14',
 			color: COL.white,
 			bgcolor: COL.gray900,
@@ -204,7 +204,7 @@ export function definePresets() {
 		name: 'Next Cue',
 		type: 'button',
 		style: {
-			text: 'NEXT\\n$(darianharmon-showcall:next_cue_number)\\n$(darianharmon-showcall:next_cue_title)',
+			text: 'NEXT\\n$(mantaglow-showcall:next_cue_number)\\n$(mantaglow-showcall:next_cue_title)',
 			size: '14',
 			color: COL.white,
 			bgcolor: COL.gray700,
@@ -218,7 +218,7 @@ export function definePresets() {
 		name: 'Show Name',
 		type: 'button',
 		style: {
-			text: '$(darianharmon-showcall:show_name)',
+			text: '$(mantaglow-showcall:show_name)',
 			size: '14',
 			color: COL.white,
 			bgcolor: COL.gray800,
@@ -232,7 +232,7 @@ export function definePresets() {
 		name: 'Show Status',
 		type: 'button',
 		style: {
-			text: '$(darianharmon-showcall:show_status)',
+			text: '$(mantaglow-showcall:show_status)',
 			size: '18',
 			color: COL.white,
 			bgcolor: COL.gray800,
@@ -246,7 +246,7 @@ export function definePresets() {
 		name: 'Show Elapsed',
 		type: 'button',
 		style: {
-			text: 'SHOW\\n$(darianharmon-showcall:show_elapsed)',
+			text: 'SHOW\\n$(mantaglow-showcall:show_elapsed)',
 			size: '14',
 			color: COL.white,
 			bgcolor: COL.gray800,
@@ -260,7 +260,7 @@ export function definePresets() {
 		name: 'Cues Progress',
 		type: 'button',
 		style: {
-			text: '$(darianharmon-showcall:cues_completed)\\n/\\n$(darianharmon-showcall:cues_total)',
+			text: '$(mantaglow-showcall:cues_completed)\\n/\\n$(mantaglow-showcall:cues_total)',
 			size: '18',
 			color: COL.white,
 			bgcolor: COL.gray800,
@@ -274,7 +274,7 @@ export function definePresets() {
 		name: 'Connection Status',
 		type: 'button',
 		style: {
-			text: '$(darianharmon-showcall:connected)1?CONNECTED:OFFLINE',
+			text: '$(mantaglow-showcall:connected)1?CONNECTED:OFFLINE',
 			size: '14',
 			color: COL.white,
 			bgcolor: COL.gray700,
@@ -409,7 +409,7 @@ export function definePresets() {
 		name: 'GO + Current Cue (one button)',
 		type: 'button',
 		style: {
-			text: '$(darianharmon-showcall:cue_number)\\n$(darianharmon-showcall:cue_title)\\n$(darianharmon-showcall:cue_remaining)',
+			text: '$(mantaglow-showcall:cue_number)\\n$(mantaglow-showcall:cue_title)\\n$(mantaglow-showcall:cue_remaining)',
 			size: '12',
 			color: COL.white,
 			bgcolor: COL.green,
