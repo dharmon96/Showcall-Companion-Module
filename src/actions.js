@@ -188,9 +188,13 @@ export function defineActions(self) {
 			},
 		},
 
+		// Smart toggle: if THIS exact text is already broadcasting, clear it;
+		// otherwise send (or replace whatever was up). Same shape for both
+		// broadcast_message and broadcast_toggle so pre-v0.3.1 buttons work
+		// correctly without needing to re-drop a preset.
 		broadcast_message: {
-			name: 'Send Broadcast Banner',
-			description: 'Push a banner message to every connected viewer (or just selected departments).',
+			name: 'Send / Toggle Broadcast Banner',
+			description: "Press once to send the banner; press again with the same text to clear it. Pair with the 'Broadcast Matches' feedback so the button glows while its message is the active broadcast.",
 			options: broadcastOptions(),
 			callback: async (action) => {
 				const text = await self.parseVariablesInString(action.options.text || '')
@@ -199,16 +203,22 @@ export function defineActions(self) {
 					return
 				}
 				try {
-					await self.api.broadcast(buildBroadcastPayload(text, action.options))
+					if (self.state?.broadcastText && self.state.broadcastText === text) {
+						await self.api.clearBroadcast()
+					} else {
+						await self.api.broadcast(buildBroadcastPayload(text, action.options))
+					}
 				} catch (err) {
 					self.log('warn', `broadcast_message: ${err.message}`)
 				}
 			},
 		},
 
+		// Alias of broadcast_message kept for users whose v0.3.0 buttons explicitly
+		// chose 'Toggle Broadcast Banner'. Behaviour is identical.
 		broadcast_toggle: {
-			name: 'Toggle Broadcast Banner',
-			description: 'If this exact message is already broadcasting, clear it. Otherwise send it. Pair with the "Broadcast Matches" feedback so the button glows while its message is live.',
+			name: 'Toggle Broadcast Banner (alias)',
+			description: 'Same as Send / Toggle Broadcast Banner — kept as a separate id for compatibility with v0.3.0 buttons.',
 			options: broadcastOptions(),
 			callback: async (action) => {
 				const text = await self.parseVariablesInString(action.options.text || '')

@@ -38,7 +38,17 @@ class ShowCallInstance extends InstanceBase {
 		this.api = null
 		this.tickInterval = null
 		this.pollInterval = null
+		// Self-clears the module's broadcast state when a timed/screen-flash
+		// banner reaches its expected end. The web banner does the same thing
+		// locally, but no `broadcast:clear` is ever emitted, so the module's
+		// match-feedback would otherwise stay lit forever.
+		this.broadcastClearTimer = null
 	}
+
+	// How long the module pretends a 'screen-flash' broadcast lives so its
+	// match-feedback drops at the same moment the on-screen banner naturally
+	// fades. Mirrors SCREEN_FLASH_BANNER_LIFETIME_MS in BroadcastBanner.tsx.
+	static SCREEN_FLASH_LIFETIME_MS = 4000
 
 	getConfigFields() {
 		return [
@@ -193,11 +203,41 @@ class ShowCallInstance extends InstanceBase {
 			this.state.broadcastColor = msg?.color ?? ''
 			this.checkFeedbacks()
 			this._refreshVariables()
+
+			// Cancel any prior auto-clear; a fresh broadcast starts a fresh life.
+			if (this.broadcastClearTimer) {
+				clearTimeout(this.broadcastClearTimer)
+				this.broadcastClearTimer = null
+			}
+
+			// Compute when this broadcast naturally ends (if at all). 'hold'
+			// stays until cleared explicitly; 'flash' alternates display but
+			// also stays until cleared.
+			let clearMs = 0
+			if (msg?.mode === 'timed' && msg?.expiresAt) {
+				clearMs = new Date(msg.expiresAt).getTime() - Date.now()
+			} else if (msg?.mode === 'screen-flash') {
+				clearMs = ShowCallInstance.SCREEN_FLASH_LIFETIME_MS
+			}
+			if (clearMs > 0) {
+				this.broadcastClearTimer = setTimeout(() => {
+					this.state.broadcastActive = false
+					this.state.broadcastText = ''
+					this.state.broadcastColor = ''
+					this.checkFeedbacks()
+					this._refreshVariables()
+					this.broadcastClearTimer = null
+				}, clearMs)
+			}
 		})
 		this.api.on('broadcast-clear', () => {
 			this.state.broadcastActive = false
 			this.state.broadcastText = ''
 			this.state.broadcastColor = ''
+			if (this.broadcastClearTimer) {
+				clearTimeout(this.broadcastClearTimer)
+				this.broadcastClearTimer = null
+			}
 			this.checkFeedbacks()
 			this._refreshVariables()
 		})
@@ -266,6 +306,10 @@ class ShowCallInstance extends InstanceBase {
 		if (this.pollInterval) {
 			clearInterval(this.pollInterval)
 			this.pollInterval = null
+		}
+		if (this.broadcastClearTimer) {
+			clearTimeout(this.broadcastClearTimer)
+			this.broadcastClearTimer = null
 		}
 		if (this.api) {
 			this.api.disconnectSocket()
