@@ -15,7 +15,8 @@ export function defineVariables() {
 		{ variableId: 'show_elapsed', name: 'Show Elapsed (m:ss)' },
 
 		// Active cue
-		{ variableId: 'cue_number', name: 'Active Cue Number' },
+		{ variableId: 'cue_number', name: 'Active Cue Number (label, e.g. "Q3")' },
+		{ variableId: 'cue_position', name: 'Active Cue Position (1-indexed in advanceable order)' },
 		{ variableId: 'cue_title', name: 'Active Cue Title' },
 		{ variableId: 'cue_duration', name: 'Active Cue Planned Duration (m:ss)' },
 		{ variableId: 'cue_elapsed', name: 'Active Cue Elapsed (m:ss)' },
@@ -27,6 +28,11 @@ export function defineVariables() {
 		{ variableId: 'next_cue_number', name: 'Next Cue Number' },
 		{ variableId: 'next_cue_title', name: 'Next Cue Title' },
 		{ variableId: 'next_cue_duration', name: 'Next Cue Planned Duration (m:ss)' },
+
+		// Broadcast banner
+		{ variableId: 'broadcast_active', name: 'Broadcast Banner Active (1 / 0)' },
+		{ variableId: 'broadcast_text', name: 'Active Broadcast Text' },
+		{ variableId: 'broadcast_color', name: 'Active Broadcast Color' },
 
 		// Connection
 		{ variableId: 'connected', name: 'Connected (1 / 0)' },
@@ -73,6 +79,7 @@ export function buildVariableValues(state, opts = {}) {
 			cues_completed: '',
 			show_elapsed: '',
 			cue_number: '',
+			cue_position: '',
 			cue_title: '',
 			cue_duration: '',
 			cue_elapsed: '',
@@ -82,11 +89,14 @@ export function buildVariableValues(state, opts = {}) {
 			next_cue_number: '',
 			next_cue_title: '',
 			next_cue_duration: '',
+			broadcast_active: '0',
+			broadcast_text: '',
+			broadcast_color: '',
 			connected: connected ? '1' : '0',
 		}
 	}
 
-	const { show, activeCue, nextCue, cuesTotal, cuesCompleted, isLive } = state
+	const { show, activeCue, nextCue, cuesTotal, cuesCompleted, isLive, cuePosition, broadcastText, broadcastColor, broadcastActive } = state
 
 	// Show elapsed
 	let showElapsedSec = null
@@ -122,6 +132,7 @@ export function buildVariableValues(state, opts = {}) {
 		show_elapsed: fmt(showElapsedSec),
 
 		cue_number: activeCue?.cue_number ?? '',
+		cue_position: cuePosition ? String(cuePosition) : '',
 		cue_title: activeCue?.title ?? '',
 		cue_duration: activeCue?.duration_seconds ? fmt(activeCue.duration_seconds) : '',
 		cue_elapsed: fmt(cueElapsedSec),
@@ -132,6 +143,10 @@ export function buildVariableValues(state, opts = {}) {
 		next_cue_number: nextCue?.cue_number ?? '',
 		next_cue_title: nextCue?.title ?? '',
 		next_cue_duration: nextCue?.duration_seconds ? fmt(nextCue.duration_seconds) : '',
+
+		broadcast_active: broadcastActive ? '1' : '0',
+		broadcast_text: broadcastText ?? '',
+		broadcast_color: broadcastColor ?? '',
 
 		connected: connected ? '1' : '0',
 	}

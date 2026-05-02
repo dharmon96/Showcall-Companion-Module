@@ -1,6 +1,6 @@
 {
   "name": "companion-module-mantaglow-showcall",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Bitfocus Companion module for Mantaglow ShowCall — control live show planning and trigger cues from a Stream Deck.",
   "main": "src/main.js",
   "type": "module",

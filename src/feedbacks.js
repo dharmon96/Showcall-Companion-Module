@@ -90,6 +90,58 @@ export function defineFeedbacks(self) {
 			},
 		},
 
+		cue_warning: {
+			type: 'boolean',
+			name: 'Active Cue Past N% of Duration',
+			description: 'Layer this with cue_critical + cue_over_time to get a 4-step color escalation (green → amber → yellow → red).',
+			defaultStyle: {
+				bgcolor: combineRgb(245, 158, 11), // amber-500
+				color: combineRgb(0, 0, 0),
+			},
+			options: [
+				{
+					id: 'pctThreshold',
+					type: 'number',
+					label: 'Threshold (% of duration)',
+					default: 75,
+					min: 1,
+					max: 99,
+				},
+			],
+			callback: (feedback) => {
+				const c = self.state?.activeCue
+				if (!c?.duration_seconds) return false
+				const elapsed = self._elapsedSeconds()
+				const pct = (elapsed / c.duration_seconds) * 100
+				const threshold = Number(feedback.options.pctThreshold) || 75
+				return pct >= threshold
+			},
+		},
+
+		broadcast_matches: {
+			type: 'boolean',
+			name: 'Broadcast Matches This Text',
+			description: 'Highlights when the active broadcast banner text equals the text on this button. Use it on buttons that toggle a specific broadcast — the button glows while its message is live.',
+			defaultStyle: {
+				bgcolor: combineRgb(249, 115, 22), // orange-500
+				color: combineRgb(0, 0, 0),
+			},
+			options: [
+				{
+					id: 'text',
+					type: 'textinput',
+					label: 'Match Text (must equal active broadcast text)',
+					default: '',
+					useVariables: true,
+				},
+			],
+			callback: async (feedback) => {
+				const target = await self.parseVariablesInString(feedback.options.text || '')
+				if (!target) return false
+				return self.state?.broadcastText === target
+			},
+		},
+
 		cue_on_hold: {
 			type: 'boolean',
 			name: 'Active Cue is On Hold',

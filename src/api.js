@@ -66,8 +66,8 @@ export class ShowCallApi extends EventEmitter {
 	resetTimer() { return this.postAction('reset-timer') }
 	goToCue({ cueId, cueNumber }) { return this.postAction('go-to', { cueId, cueNumber }) }
 	toggleHold({ cueId } = {}) { return this.postAction('hold', cueId !== undefined ? { cueId } : {}) }
-	broadcast({ text, mode = 'persistent', color = 'orange', durationSeconds, flashIntervalMs }) {
-		return this.postAction('broadcast', { text, mode, color, durationSeconds, flashIntervalMs })
+	broadcast({ text, mode = 'hold', color = 'orange', durationSeconds, flashIntervalMs, screenFlashCount, targetDeptIds }) {
+		return this.postAction('broadcast', { text, mode, color, durationSeconds, flashIntervalMs, screenFlashCount, targetDeptIds })
 	}
 	clearBroadcast() { return this.postAction('broadcast/clear') }
 

@@ -185,6 +185,34 @@ export function definePresets() {
 		feedbacks: [cueOverFeedback, cueCriticalFeedback(10)],
 	}
 
+	presets.cue_timer_escalating = {
+		category: 'Display',
+		name: 'Cue Timer (4-step color escalation)',
+		type: 'button',
+		style: {
+			text: '$(mantaglow-showcall:cue_elapsed)\\n/\\n$(mantaglow-showcall:cue_duration)',
+			size: '14',
+			color: COL.black,
+			bgcolor: COL.green, // base: green when fresh
+		},
+		steps: noAction,
+		// Order matters — Companion stacks feedbacks, later ones override earlier.
+		// Layer: warning (75%) → critical (10s left) → over-time.
+		feedbacks: [
+			{
+				feedbackId: 'cue_warning',
+				options: { pctThreshold: 75 },
+				style: { bgcolor: combineRgb(245, 158, 11), color: COL.black },
+			},
+			{
+				feedbackId: 'cue_critical',
+				options: { thresholdSeconds: 10 },
+				style: { bgcolor: COL.yellow, color: COL.black },
+			},
+			cueOverFeedback,
+		],
+	}
+
 	presets.cue_remaining = {
 		category: 'Display',
 		name: 'Cue Remaining',
@@ -257,10 +285,27 @@ export function definePresets() {
 
 	presets.cues_progress = {
 		category: 'Display',
-		name: 'Cues Progress',
+		name: 'Cues Completed (count)',
 		type: 'button',
 		style: {
 			text: '$(mantaglow-showcall:cues_completed)\\n/\\n$(mantaglow-showcall:cues_total)',
+			size: '18',
+			color: COL.white,
+			bgcolor: COL.gray800,
+		},
+		steps: noAction,
+		feedbacks: [],
+	}
+
+	// "Where are we?" preset using cue_position — this reads "10 / 16" when
+	// the active cue is the 10th advanceable cue, regardless of whether the
+	// previous 9 are formally marked completed (handy after jump-to-cue).
+	presets.cue_position_display = {
+		category: 'Display',
+		name: 'Cue Position (10 / 16)',
+		type: 'button',
+		style: {
+			text: '$(mantaglow-showcall:cue_position)\\n/\\n$(mantaglow-showcall:cues_total)',
 			size: '18',
 			color: COL.white,
 			bgcolor: COL.gray800,
@@ -331,18 +376,28 @@ export function definePresets() {
 	}
 
 	// ── 4. Quick Broadcasts ────────────────────────────────
-	// Pre-built broadcast banners crew almost always need. Tap to push, tap
-	// "Clear Broadcast" to dismiss. Edit the text/colour/duration on the
-	// button after dropping it.
+	// Pre-built broadcast banners. These use the broadcast_toggle action so
+	// pressing the button a second time clears the banner — pair with the
+	// broadcast_matches feedback so the button glows while *its* message is
+	// the active one. Edit text/colour/duration on the button after dropping.
 	const quickBroadcasts = [
-		{ id: 'standby', label: 'STAND BY', text: 'STAND BY', color: 'orange', mode: 'persistent' },
-		{ id: 'go_in_5', label: '5 MIN', text: '5 MINUTES TO SHOW', color: 'yellow', mode: 'timed', durationSeconds: 60 },
-		{ id: 'go_in_1', label: '1 MIN', text: '1 MINUTE TO SHOW', color: 'red', mode: 'timed', durationSeconds: 60 },
-		{ id: 'going_live', label: 'GOING LIVE', text: 'GOING LIVE NOW', color: 'green', mode: 'flash' },
-		{ id: 'hold_msg', label: 'HOLD', text: 'HOLD — DO NOT START', color: 'yellow', mode: 'persistent' },
-		{ id: 'all_clear', label: 'ALL CLEAR', text: 'ALL CLEAR — RESUME', color: 'green', mode: 'timed', durationSeconds: 8 },
-		{ id: 'wrap', label: 'WRAP', text: "THAT'S A WRAP — THANK YOU", color: 'blue', mode: 'timed', durationSeconds: 12 },
+		{ id: 'standby',   label: 'STAND BY',   text: 'STAND BY',                    color: 'orange', mode: 'hold' },
+		{ id: 'go_in_5',   label: '5 MIN',      text: '5 MINUTES TO SHOW',           color: 'amber',  mode: 'timed', durationSeconds: 60 },
+		{ id: 'go_in_1',   label: '1 MIN',      text: '1 MINUTE TO SHOW',            color: 'red',    mode: 'timed', durationSeconds: 60 },
+		{ id: 'going_live',label: 'GOING LIVE', text: 'GOING LIVE NOW',              color: 'green',  mode: 'flash' },
+		{ id: 'hold_msg',  label: 'HOLD',       text: 'HOLD — DO NOT START',         color: 'amber',  mode: 'hold' },
+		{ id: 'all_clear', label: 'ALL CLEAR',  text: 'ALL CLEAR — RESUME',          color: 'green',  mode: 'timed', durationSeconds: 8 },
+		{ id: 'wrap',      label: 'WRAP',       text: "THAT'S A WRAP — THANK YOU",   color: 'cyan',   mode: 'timed', durationSeconds: 12 },
+		{ id: 'alert',     label: 'ALERT',      text: 'ALERT',                       color: 'red',    mode: 'screen-flash', screenFlashCount: 5 },
 	]
+
+	const colorBg = (c) =>
+		c === 'red' ? COL.red :
+		c === 'green' ? COL.green :
+		c === 'amber' ? COL.yellow :
+		c === 'cyan' ? COL.blue :
+		c === 'orange' ? COL.orange :
+		COL.violet
 
 	for (const b of quickBroadcasts) {
 		presets[`broadcast_${b.id}`] = {
@@ -352,28 +407,33 @@ export function definePresets() {
 			style: {
 				text: b.label,
 				size: '14',
-				color: b.color === 'yellow' || b.color === 'green' ? COL.black : COL.white,
-				bgcolor:
-					b.color === 'red' ? COL.red :
-					b.color === 'green' ? COL.green :
-					b.color === 'yellow' ? COL.yellow :
-					b.color === 'blue' ? COL.blue :
-					b.color === 'orange' ? COL.orange :
-					COL.violet,
+				color: b.color === 'amber' || b.color === 'green' ? COL.black : COL.white,
+				bgcolor: colorBg(b.color),
 			},
 			steps: [{
 				down: [{
-					actionId: 'broadcast_message',
+					actionId: 'broadcast_toggle',
 					options: {
 						text: b.text,
 						mode: b.mode,
 						color: b.color,
 						durationSeconds: b.durationSeconds ?? 10,
+						screenFlashCount: b.screenFlashCount ?? 3,
+						targetDeptIds: '',
 					},
 				}],
 				up: [],
 			}],
-			feedbacks: [],
+			feedbacks: [
+				{
+					feedbackId: 'broadcast_matches',
+					options: { text: b.text },
+					style: {
+						bgcolor: COL.white,
+						color: colorBg(b.color),
+					},
+				},
+			],
 		}
 	}
 
@@ -384,8 +444,8 @@ export function definePresets() {
 		style: { text: 'BROAD\\nCAST', size: '14', color: COL.white, bgcolor: COL.orange },
 		steps: [{
 			down: [{
-				actionId: 'broadcast_message',
-				options: { text: '', mode: 'persistent', color: 'orange', durationSeconds: 10 },
+				actionId: 'broadcast_toggle',
+				options: { text: '', mode: 'hold', color: 'orange', durationSeconds: 10, screenFlashCount: 3, targetDeptIds: '' },
 			}],
 			up: [],
 		}],

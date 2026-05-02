@@ -27,9 +27,12 @@ class ShowCallInstance extends InstanceBase {
 			nextCue: null,
 			cuesTotal: 0,
 			cuesCompleted: 0,
+			cuePosition: 0,
 			isLive: false,
 			connected: false,
 			broadcastActive: false,
+			broadcastText: '',
+			broadcastColor: '',
 		}
 
 		this.api = null
@@ -184,13 +187,19 @@ class ShowCallInstance extends InstanceBase {
 				}
 			}
 		})
-		this.api.on('broadcast-message', () => {
+		this.api.on('broadcast-message', (msg) => {
 			this.state.broadcastActive = true
+			this.state.broadcastText = msg?.text ?? ''
+			this.state.broadcastColor = msg?.color ?? ''
 			this.checkFeedbacks()
+			this._refreshVariables()
 		})
 		this.api.on('broadcast-clear', () => {
 			this.state.broadcastActive = false
+			this.state.broadcastText = ''
+			this.state.broadcastColor = ''
 			this.checkFeedbacks()
+			this._refreshVariables()
 		})
 
 		// 1Hz tick to keep elapsed/remaining variables flowing.
@@ -216,6 +225,7 @@ class ShowCallInstance extends InstanceBase {
 		this.state.nextCue = snapshot.nextCue
 		this.state.cuesTotal = snapshot.cuesTotal ?? 0
 		this.state.cuesCompleted = snapshot.cuesCompleted ?? 0
+		this.state.cuePosition = Number(snapshot.cuePosition) || 0
 		this.state.isLive = !!snapshot.isLive
 		this.checkFeedbacks()
 		this._refreshVariables()

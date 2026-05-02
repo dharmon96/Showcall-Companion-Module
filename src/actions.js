@@ -7,6 +7,80 @@
  * stays in the web UI.
  */
 
+// Reusable broadcast option set so send + toggle stay consistent.
+function broadcastOptions() {
+	return [
+		{ id: 'text', type: 'textinput', label: 'Message', default: '', useVariables: true },
+		{
+			id: 'mode',
+			type: 'dropdown',
+			label: 'Mode',
+			default: 'hold',
+			choices: [
+				{ id: 'hold', label: 'Hold (until cleared)' },
+				{ id: 'timed', label: 'Timed (auto-clear after N seconds)' },
+				{ id: 'flash', label: 'Flash (alternating display)' },
+				{ id: 'screen-flash', label: 'Screen Flash (fullscreen color pulses)' },
+			],
+		},
+		{
+			id: 'color',
+			type: 'dropdown',
+			label: 'Color',
+			default: 'orange',
+			choices: [
+				{ id: 'orange', label: 'Orange' },
+				{ id: 'red', label: 'Red' },
+				{ id: 'amber', label: 'Amber' },
+				{ id: 'green', label: 'Green' },
+				{ id: 'cyan', label: 'Cyan' },
+				{ id: 'violet', label: 'Violet' },
+			],
+		},
+		{
+			id: 'durationSeconds',
+			type: 'number',
+			label: 'Duration (seconds — timed mode)',
+			default: 10,
+			min: 1,
+			max: 600,
+			isVisible: (opts) => opts.mode === 'timed',
+		},
+		{
+			id: 'screenFlashCount',
+			type: 'number',
+			label: 'Pulses (screen-flash mode)',
+			default: 3,
+			min: 1,
+			max: 20,
+			isVisible: (opts) => opts.mode === 'screen-flash',
+		},
+		{
+			id: 'targetDeptIds',
+			type: 'textinput',
+			label: 'Target dept IDs (comma-separated, blank = everyone)',
+			default: '',
+			useVariables: true,
+			tooltip: 'Optional. Numeric department IDs from your ShowCall show, comma-separated. Leave blank to broadcast to everyone.',
+		},
+	]
+}
+
+function buildBroadcastPayload(text, opts) {
+	const ids = (opts.targetDeptIds || '')
+		.split(',')
+		.map((s) => parseInt(String(s).trim(), 10))
+		.filter((n) => Number.isFinite(n) && n > 0)
+	return {
+		text,
+		mode: opts.mode,
+		color: opts.color,
+		durationSeconds: opts.mode === 'timed' ? Number(opts.durationSeconds) : undefined,
+		screenFlashCount: opts.mode === 'screen-flash' ? Number(opts.screenFlashCount) : undefined,
+		targetDeptIds: ids.length > 0 ? ids : undefined,
+	}
+}
+
 export function defineActions(self) {
 	return {
 		advance: {
@@ -116,50 +190,8 @@ export function defineActions(self) {
 
 		broadcast_message: {
 			name: 'Send Broadcast Banner',
-			description: 'Push a banner message to every connected viewer.',
-			options: [
-				{
-					id: 'text',
-					type: 'textinput',
-					label: 'Message',
-					default: '',
-					useVariables: true,
-				},
-				{
-					id: 'mode',
-					type: 'dropdown',
-					label: 'Mode',
-					default: 'persistent',
-					choices: [
-						{ id: 'persistent', label: 'Persistent (until cleared)' },
-						{ id: 'timed', label: 'Timed (auto-clear after N seconds)' },
-						{ id: 'flash', label: 'Flash (alternating display)' },
-					],
-				},
-				{
-					id: 'color',
-					type: 'dropdown',
-					label: 'Color',
-					default: 'orange',
-					choices: [
-						{ id: 'orange', label: 'Orange' },
-						{ id: 'red', label: 'Red' },
-						{ id: 'yellow', label: 'Yellow' },
-						{ id: 'green', label: 'Green' },
-						{ id: 'blue', label: 'Blue' },
-						{ id: 'purple', label: 'Purple' },
-					],
-				},
-				{
-					id: 'durationSeconds',
-					type: 'number',
-					label: 'Duration (seconds, timed mode only)',
-					default: 10,
-					min: 1,
-					max: 600,
-					isVisible: (opts) => opts.mode === 'timed',
-				},
-			],
+			description: 'Push a banner message to every connected viewer (or just selected departments).',
+			options: broadcastOptions(),
 			callback: async (action) => {
 				const text = await self.parseVariablesInString(action.options.text || '')
 				if (!text) {
@@ -167,14 +199,31 @@ export function defineActions(self) {
 					return
 				}
 				try {
-					await self.api.broadcast({
-						text,
-						mode: action.options.mode,
-						color: action.options.color,
-						durationSeconds: action.options.mode === 'timed' ? Number(action.options.durationSeconds) : undefined,
-					})
+					await self.api.broadcast(buildBroadcastPayload(text, action.options))
 				} catch (err) {
 					self.log('warn', `broadcast_message: ${err.message}`)
+				}
+			},
+		},
+
+		broadcast_toggle: {
+			name: 'Toggle Broadcast Banner',
+			description: 'If this exact message is already broadcasting, clear it. Otherwise send it. Pair with the "Broadcast Matches" feedback so the button glows while its message is live.',
+			options: broadcastOptions(),
+			callback: async (action) => {
+				const text = await self.parseVariablesInString(action.options.text || '')
+				if (!text) {
+					self.log('warn', 'broadcast_toggle: text is empty')
+					return
+				}
+				try {
+					if (self.state?.broadcastText && self.state.broadcastText === text) {
+						await self.api.clearBroadcast()
+					} else {
+						await self.api.broadcast(buildBroadcastPayload(text, action.options))
+					}
+				} catch (err) {
+					self.log('warn', `broadcast_toggle: ${err.message}`)
 				}
 			},
 		},
