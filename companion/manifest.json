@@ -3,10 +3,11 @@
   "name": "darianharmon-showcall",
   "shortname": "ShowCall",
   "description": "Control ShowCall (live show planning + run-of-show) from Bitfocus Companion. Trigger GO / Back / specific cues, send broadcast banners to crew, and surface live cue timers as Stream Deck feedback.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "repository": "https://github.com/dharmon96/Showcall-Companion-Module",
   "bugs": "https://github.com/dharmon96/Showcall-Companion-Module/issues",
+  "legacyIds": [],
   "maintainers": [
     {
       "name": "Darian Harmon",

@@ -1,6 +1,6 @@
 {
   "name": "companion-module-darianharmon-showcall",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Bitfocus Companion module for ShowCall — control live show planning and trigger cues from a Stream Deck.",
   "main": "src/main.js",
   "type": "module",
@@ -19,11 +19,11 @@
     "email": "darianlharmon@gmail.com"
   },
   "dependencies": {
-    "@companion-module/base": "~1.10.0",
+    "@companion-module/base": "~1.12.0",
     "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
-    "@companion-module/tools": "^2.1.0"
+    "@companion-module/tools": "^2.7.0"
   },
   "engines": {
     "node": ">=18"
